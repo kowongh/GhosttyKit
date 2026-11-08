@@ -1,1 +1,1 @@
-@_exported import CGhosttyKitBinary
+@_exported import GhosttyVt

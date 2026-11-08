@@ -12,48 +12,29 @@ let package = Package(
             name: "GhosttyKit",
             targets: ["GhosttyKit"]
         ),
-        .executable(
-            name: "GhosttyKitDemo",
-            targets: ["GhosttyKitDemo"]
-        )
+        .library(
+            name: "GhosttyVt",
+            targets: ["GhosttyVt"]
+        ),
     ],
     targets: [
+        // libghostty-vt 1.0.0. Checksum is the ghostty-vt-1.0.0.xcframework.zip
+        // line in https://release.files.ghostty.org/libghostty-vt/1.0.0/SHA256SUMS
         .binaryTarget(
-            name: "CGhosttyKitBinary",
-            path: "Vendor/GhosttyKit.xcframework"
+            name: "GhosttyVt",
+            url: "https://release.files.ghostty.org/libghostty-vt/1.0.0/ghostty-vt-1.0.0.xcframework.zip",
+            checksum: "2c32b7409b2b6c2ef6cfd606526de357762ad458bdc27134ad074e86506a8bc2"
         ),
         .target(
             name: "GhosttyKit",
-            dependencies: [
-                "CGhosttyKitBinary",
-            ],
+            dependencies: ["GhosttyVt"],
             path: "Sources/GhosttyKitExports",
-            linkerSettings: [
-                .linkedFramework("AppKit"),
-                .linkedFramework("Carbon"),
-                .linkedFramework("CoreGraphics"),
-                .linkedFramework("CoreText"),
-                .linkedFramework("IOSurface"),
-                .linkedFramework("Metal"),
-                .linkedLibrary("c++"),
+            exclude: [
+                "GhosttyDefaultTheme.swift",
+                "GhosttyTerminalRepresentable.swift",
+                "GhosttyTerminalSession.swift",
+                "GhosttyTerminalView.swift",
             ]
         ),
-        .executableTarget(
-            name: "GhosttyKitDemo",
-            dependencies: [
-                "GhosttyKit",
-            ],
-            path: "Sources/GhosttyKitDemo",
-            linkerSettings: [
-                .linkedFramework("AppKit"),
-                .linkedFramework("SwiftUI"),
-            ]
-        ),
-        .testTarget(
-            name: "GhosttyKitTests",
-            dependencies: [
-                "GhosttyKit",
-            ]
-        )
     ]
 )

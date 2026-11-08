@@ -1,104 +1,38 @@
 # GhosttyKit
 
-Swift Package Manager wrapper around the upstream `libghostty` macOS XCFramework.
+Swift package for [libghostty-vt 1.0](https://lib.ghostty.org/vt/). The
+`GhosttyVt` product is the official prebuilt XCFramework. `GhosttyKit`
+re-exports that module, so `import GhosttyKit` and `import GhosttyVt` see the
+same C API (`ghostty/vt.h`).
 
-`GhosttyKit` publishes a normal Swift package product that client apps can
-import directly. The repo tracks a checked-in framework-style
-`GhosttyKit.xcframework` that SwiftPM consumes from the package checkout, plus
-a zipped copy for release packaging. The vendored binary and header mirror come from
-[`ghostty-org/ghostty`](https://github.com/ghostty-org/ghostty).
+```swift
+.binaryTarget(
+    name: "GhosttyVt",
+    url: "https://release.files.ghostty.org/libghostty-vt/1.0.0/ghostty-vt-1.0.0.xcframework.zip",
+    checksum: "2c32b7409b2b6c2ef6cfd606526de357762ad458bdc27134ad074e86506a8bc2"
+)
+```
 
 ## Install
 
-After the initial tag is published:
-
 ```swift
-.package(url: "https://github.com/briannadoubt/GhosttyKit.git", from: "0.1.3")
+.package(url: "https://github.com/kowongh/GhosttyKit.git", branch: "main")
 ```
 
-Then depend on the `GhosttyKit` product from your target.
+Depend on `GhosttyKit` or `GhosttyVt`. The XCFramework has macOS (arm64 and
+x86_64) and iOS slices. This package declares a macOS 13 minimum.
 
-This package currently ships a macOS arm64 binary built with a minimum deployment
-target of macOS 13.
+libghostty-vt is the terminal-state library. It has no AppKit surface and no
+PTY. The previous embedding host (`GhosttyTerminalSession`,
+`GhosttyTerminalView`) is still in `Sources/GhosttyKitExports` but is excluded
+from the build.
 
-## Default AppKit host
+## Updating the binary
 
-For SwiftUI, drop in the ready-made view:
-
-```swift
-import GhosttyKit
-
-GhosttyTerminal()
-```
-
-For AppKit, ask a session for its hosted view:
-
-```swift
-import GhosttyKit
-
-let terminalView = GhosttyTerminalSession().makeView()
-```
-
-To try the bundled demo app:
-
-```sh
-swift run GhosttyKitDemo
-```
-
-`GhosttyTerminalView` installs the AppKit responder/text-input behavior that a
-terminal needs by default, including Delete/Return/arrow key handling without
-system beeps, copy/paste responder actions, mouse tracking, focus updates,
-backing-scale updates, link context-menu actions, cursor shape updates, config
-open/reload actions, title and working-directory state, search/progress/process
-state, secure-input bridging, size hints, tab/split request callbacks, desktop
-notification callbacks, config diagnostics, and standard pasteboard callbacks.
-The default host also loads the user's Ghostty config and, when no theme is
-configured, writes a small managed light/dark theme override so embedded
-terminals do not render as plain unstyled text.
-
-Downstream packages resolve the checked-in `Vendor/GhosttyKit.xcframework`
-through a local SwiftPM binary target, so the package stays consumable without
-unsafe build flags or remote artifact indirection.
-
-## Updating libghostty
-
-The vendored artifact and headers are refreshed from the upstream Ghostty source
-tracked in the `Vendor/ghostty-upstream` submodule.
-
-For a manual refresh:
-
-```sh
-git submodule update --init --recursive
-./Scripts/update-libghostty.sh
-```
-
-To pin a specific upstream ref first:
-
-```sh
-./Scripts/update-libghostty.sh --ref origin/main
-./Scripts/update-libghostty.sh --latest-tag
-```
-
-The script rebuilds `GhosttyKit.xcframework`, syncs the public headers, refreshes
-the local static library mirror, and records the exact upstream commit in
-`Vendor/libghostty.version`.
-
-To refresh the tracked distribution archive without rebuilding:
-
-```sh
-./Scripts/unpack-artifact.sh
-./Scripts/package-artifact.sh
-```
-
-## Automation
-
-- CI validates the package builds and tests cleanly on macOS arm64 and checks
-  that the repo is publishable without SwiftPM unsafe flags.
-- Dependabot checks both GitHub Actions and the `Vendor/ghostty-upstream`
-  submodule nightly.
-- A GitHub Actions workflow amends Dependabot submodule PRs by regenerating the
-  zipped XCFramework, header mirror, and metadata so upstream `libghostty`
-  changes arrive as a reviewable pull request instead of manual repo surgery.
+Bump the `url` and `checksum` in `Package.swift` to a newer
+`ghostty-vt-VERSION.xcframework.zip` from
+`https://release.files.ghostty.org/libghostty-vt/VERSION/SHA256SUMS`.
+The checksum is the SHA256 of that zip.
 
 ## License
 
